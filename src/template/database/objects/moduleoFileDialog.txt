@@ -1,0 +1,267 @@
+Option Compare Database
+Option Explicit
+
+' ---------------------------------------------------------------------------
+' PROCEDURES:
+' File Select Single or Multiple (delimited string)
+' File SaveAs ' warns user if file exist
+' File Open
+' Folder Select
+'
+' What is the difference?
+' SaveAs checks to see if there is an existing file and prompts the user
+'   if the user selects No, the dialog stays open
+'   for the user to enter another name or cancel
+' File Open ensures that the file exists
+'   and warns the user if it doesn't
+' ---------------------------------------------------------------------------
+Private Const strDELIM As String = ";"
+
+Public Function Extension_ListTest()
+    Debug.Print Extension_List("Access")
+End Function
+Public Function Extension_List(ApplicationName As String) As String
+' Returns a list of File Extensions for the specified Office Application
+' to use with the Office File Dialog
+'   rather than building a list of extensions in the calling procedure
+' This list is populated at design time
+' see table: oSysFileExtension
+'   the oSys prefix is used (rather than Usys) so that you can still see it while hiding System tables.
+'   the developer can then chose to set its hidden property
+'   You can rename the table and change the code in this proc
+Dim rst As DAO.Recordset
+Dim strSQL As String
+Dim strList As String
+
+    strSQL = " SELECT File_Extension" _
+                & " FROM aSysFileExtension" _
+                & " WHERE Application_Name = '" & ApplicationName & "'" _
+                & " AND FileExtension_Active = True"
+    Set rst = oDB.OpenRecordset(strSQL, dbReadOnly)
+    With rst
+        Do Until .EOF
+            If Not strList = "" Then strList = strList & ";"
+            strList = strList & "*." & !File_Extension
+            .MoveNext
+        Loop
+    End With
+    Extension_List = strList
+    Set rst = Nothing
+End Function
+
+Public Function Open_FullPathTest()
+    Debug.Print Open_FullPath("Select File to Open" _
+                                , "E:\App\HES\Dev" _
+                                , "Text" _
+                                , "*.*" _
+                                )
+End Function
+
+Public Function Open_FullPath(Optional Title As String = "Open File" _
+                                    , Optional InitialOpenPath As String = "C:\" _
+                                    , Optional FilterName As String = "All" _
+                                    , Optional FilterList As String = "*" _
+                                    ) As String
+' Returns one Full Path or an empty string
+' File must exist otherwise the user may only cancel to close
+On Error GoTo Error_Handler
+Dim fDialog As Office.FileDialog ' required Micosoft Office Library
+Dim strList As String
+
+    Set fDialog = Application.FileDialog(msoFileDialogOpen)
+    With fDialog
+        .Title = Title
+        .Filters.Clear
+        If Not FilterName = "All" Then
+            ' a Filter Name was specified
+            If FilterList = "*" Then
+                ' but not a list so lets look up the list for the Filter Name
+                ' Returns an empty string if there are no records for this Filter Name
+                FilterList = Extension_List(FilterName)
+            End If
+        End If
+        
+        If Len(FilterList) < 2 Then FilterList = "*.*"
+        .Filters.Add FilterName & " Files", FilterList
+        .Filters.Add FilterName, FilterList
+        If InStrRev(InitialOpenPath, ".") = 0 Then
+            If Right(InitialOpenPath, 1) <> "\" Then
+                ' so dialog doesn't think the folder is a file
+                InitialOpenPath = InitialOpenPath & "\"
+            End If
+        End If
+        .InitialFileName = InitialOpenPath
+'        .Filters.Add "File", strExtension
+        If .Show Then
+            Open_FullPath = .SelectedItems(1)
+        End If
+    End With
+    strList = ""
+    Set fDialog = Nothing
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox Err.Number & vbNewLine _
+            & Err.Description _
+            , vbCritical, "Open_FullPath"
+    Resume Exit_Procedure
+    Resume
+End Function
+
+Public Function SaveAs_FullPath_Test()
+Dim strFromFullPath As String
+Dim strToFullPath As String
+    strFromFullPath = "C:\Test.txt"
+    strToFullPath = "C:\Test Copy.txt"
+    strToFullPath = SaveAs_FullPath(strToFullPath)
+    If Len(strToFullPath) > 0 Then
+        ' if the file exists then we don't get here unless the user chose to replace
+        oFso.CopyFile strFromFullPath, strToFullPath, True
+    End If
+End Function
+
+Public Function SaveAs_FullPath(InitialFullPath As String _
+                                    ) As String
+' Returns the Selected Folder and File Name
+' warns the user if the selected file exists
+' Returns an empty string if user cancels
+Dim fDialog As Office.FileDialog ' required Micosoft Office Library
+Dim strList As String
+
+    Set fDialog = Application.FileDialog(Office.msoFileDialogSaveAs)
+    With fDialog
+        .Title = "Save As"
+        .InitialFileName = InitialFullPath
+        If .Show Then
+            ' if the selected file exists a message box will ask the user if they want to replace
+            ' they either answer Yes and the full path is returned
+            ' or the dialog remains open and the user must select another name or cancel
+            SaveAs_FullPath = .SelectedItems(1)
+        End If
+    End With
+    
+End Function
+
+Public Function Select_FolderTest()
+
+    Debug.Print Select_Folder("Select Folder", "C:\")
+    
+End Function
+Public Function Select_Folder(Optional Title As String = "Select Folder" _
+                                    , Optional InitialFolder As String = "C:\" _
+                                    ) As String
+On Error GoTo Error_Handler
+Dim Dlg As Office.FileDialog
+
+    Set Dlg = Access.Application.FileDialog(Office.msoFileDialogFolderPicker)
+    With Dlg
+        .Title = Title
+        .InitialFileName = InitialFolder
+        If .Show Then
+            Select_Folder = .SelectedItems(1) & "\"
+        End If
+    End With
+    Set Dlg = Nothing
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox Err.Number & vbNewLine _
+            & Err.Description _
+            , vbCritical, "Select_Folder"
+    Resume Exit_Procedure
+    Resume
+End Function
+
+Public Function Select_FullPathTest()
+
+Single_Select:
+    Debug.Print Select_FullPath("Select Files", "E:\App\", "Access", "*.accdb;*.accde", False)
+    
+Multiple_Select:
+    Dim str As String
+    Dim strList() As String
+    Dim i As Integer
+    
+    str = Select_FullPath("Select File", "E:\App", "Access", "*.accdb;*.accde", True)
+    Debug.Print str
+    If InStr(str, strDELIM) Then
+        ' Split into an Array
+        strList() = Split(str, strDELIM)
+        ' Iterate the Array
+        Do Until i >= UBound(strList()) + 1
+            Debug.Print strList(i)
+            i = i + 1
+        Loop
+    End If
+End Function
+
+Public Function Select_FullPath(Optional Title As String = "Select File" _
+                                    , Optional InitialFolder As String = "C:\" _
+                                    , Optional FilterName As String = "All" _
+                                    , Optional FilterList As String = "*" _
+                                    , Optional AllowMultiple As Boolean = False _
+                                    ) As String
+' Returns
+    ' Empty string if user cancelled
+    ' One or More Full Paths
+    ' Multi Select creates a delimited list. Use Split() to convert to an array
+' Requires reference to Microsoft Office 16 Object Library.
+' Filter allows for a list of Extensions eg: *.csv;*.txt
+' or an Application Name that gets a list of file extensions
+'   for the specified App from oSysFileExtension
+
+On Error GoTo Error_Handler
+Dim fDialog As Office.FileDialog ' required Micosoft Office Library
+Dim varFile As Variant
+Dim str As String
+
+    Set fDialog = Application.FileDialog(Office.msoFileDialogFilePicker)
+    
+    With fDialog
+        .AllowMultiSelect = AllowMultiple
+        .Title = Title
+        .InitialFileName = InitialFolder
+        
+        ' Clear out the current filters, and add our own.
+        .Filters.Clear
+
+        If Not FilterName = "All" Then
+            ' a Filter Name was specified
+            If FilterList = "*" Then
+                ' but not a list so lets look up the list for the Filter Name
+                ' Returns an empty string if there are no records for this Filter Name
+                FilterList = Extension_List(FilterName)
+            End If
+        End If
+        
+        If Len(FilterList) < 2 Then FilterList = "*.*"
+        .Filters.Add FilterName & " Files", FilterList
+        
+        If .Show = True Then
+            ' Show the dialog box.
+            ' If the .Show method returns True, the user picked at least one file.
+            For Each varFile In .SelectedItems
+                If str <> "" Then str = str & strDELIM
+                str = str & varFile
+            Next
+        Else
+            ' If the .Show method returns False, the user clicked Cancel.
+            str = ""
+        End If
+    End With
+   
+    Select_FullPath = str
+    
+Exit_Procedure:
+   On Error Resume Next
+   Set fDialog = Nothing
+   Exit Function
+Error_Handler:
+    MsgBox "Error " & Err.Number & " (" & Err.Description & ") in procedure GetFileFullPath of Module modFileDialog"
+    Resume Exit_Procedure
+    Resume
+End Function

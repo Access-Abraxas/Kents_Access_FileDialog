@@ -1,0 +1,163 @@
+Option Compare Database
+Option Explicit
+
+Public Function File_Overwrite(ToFullPath As String) As Boolean
+' Prompt user for permission to overwrite if the file exists
+' return true if they say Yes or the File Does Not Exist
+Dim strMessage As String
+    If oFso.FileExists(ToFullPath) Then
+        strMessage = "The File:" & vbNewLine _
+                            & ToFullPath & vbNewLine _
+                            & "Exists. Do you want to Overwrite it?"
+        If vbYes = MsgBox(strMessage, vbYesNo + vbDefaultButton2, "File Exists") Then
+            File_Overwrite = True
+        End If
+    Else
+        File_Overwrite = True
+    End If
+    
+End Function
+
+Public Function File_CopyTest()
+    File_Move "E:\0\art.jpg", "E:\0\77\art.jpg", False, True
+End Function
+Public Function File_Copy(FromFullPath As String _
+                        , ToFullPath As String _
+                        , Optional ForceOverwrite As Boolean = False _
+                        , Optional PromptOverwrite As Boolean = True _
+                        ) As Boolean
+On Error GoTo Error_Handler
+Dim blnSuccess As Boolean
+
+    If FromFullPath = ToFullPath Then GoTo Exit_Procedure
+    
+    With oFso
+        If .FileExists(FromFullPath) Then
+            If Not ForceOverwrite Then
+                If Not .FileExists(ToFullPath) Then
+                    ForceOverwrite = True
+                    
+                ElseIf PromptOverwrite Then
+                ' if we aren't already enforcing an overwrite
+                ' get the user's permission
+                    ForceOverwrite = File_Overwrite(ToFullPath)
+                End If
+            End If
+            If ForceOverwrite Then
+                ' Ensure the To Folder exists
+                oFolder.Ensure_Exists (ToFullPath)
+                .CopyFile FromFullPath, ToFullPath, True
+                blnSuccess = .FileExists(ToFullPath)
+            End If
+        End If
+    End With
+    
+    File_Copy = blnSuccess
+    
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "ofile.File_Copy"
+    Resume Exit_Procedure
+    Resume Next
+End Function
+
+Public Function File_Move(FromFullPath As String _
+                                , ToFullPath As String _
+                                , Optional ForceOverwrite As Boolean = False _
+                                , Optional PromptOverwrite As Boolean = True _
+                            ) As Boolean
+' Effectively the same as Rename
+' same as copy but this one deletes the source file
+' Returns True if operation was successful
+On Error GoTo Error_Handler
+Dim blnSuccess As Boolean
+
+Basic_Validation:
+    If FromFullPath = ToFullPath Then GoTo Exit_Procedure
+    If Not oFso.FileExists(FromFullPath) Then GoTo Exit_Procedure
+    
+    blnSuccess = File_Copy(FromFullPath _
+                                , ToFullPath _
+                                , ForceOverwrite _
+                                , PromptOverwrite)
+    If blnSuccess Then
+From_Delete:
+        ' If the Copy was successul
+        ' Delete the original and return True
+        oFso.DeleteFile FromFullPath, True
+        blnSuccess = Not oFso.FileExists(FromFullPath)
+    End If
+    
+    File_Move = blnSuccess
+    
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "ofile.File_Move"
+    Resume Exit_Procedure
+    Resume Next
+End Function
+
+Public Function File_Rename(FromFullPath As String _
+                                , ToFullPath As String _
+                                , Optional ForceOverwrite As Boolean = False _
+                                , Optional PromptOverwrite As Boolean = True _
+                            ) As Boolean
+On Error GoTo Error_Handler
+
+    File_Rename = File_Move(FromFullPath _
+                                , ToFullPath _
+                                , ForceOverwrite _
+                                , PromptOverwrite)
+                                
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox Err.Number & vbNewLine _
+            & Err.Description _
+            , vbCritical, "File_Rename"
+    Resume Exit_Procedure
+    Resume
+End Function
+
+
+Public Function File_Delete(FullPath As String, Optional ForceDelete As Boolean)
+' Returns true if file did not exist
+' or is deleted and no longer exists
+On Error GoTo Error_Handler
+    
+    With oFso
+        If .FileExists(FullPath) Then
+            .DeleteFile FullPath, ForceDelete
+        End If
+        File_Delete = Not .FileExists(FullPath)
+    End With
+    
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "ofile.File_Delete"
+    Resume Exit_Procedure
+    Resume Next
+End Function
+
+Public Property Get File_Exists(FullPath As String) As Boolean
+On Error Resume Next
+Dim blnWild As Boolean
+    blnWild = InStr(FullPath, "*") Or InStr(FullPath, "?")
+    If blnWild Then
+        File_Exists = Len(Dir(FullPath)) > 0
+    Else
+        File_Exists = oFso.FileExists(FullPath)
+    End If
+End Property
+
+Public Property Get File_Extension(ByVal FileName As String) As String
+' Returns File Extension even if the File Does Not Exist
+    File_Extension = oFso.GetExtensionName(FileName)
+End Property

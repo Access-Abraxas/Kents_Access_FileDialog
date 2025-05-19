@@ -1,0 +1,66 @@
+
+
+############### 2025-05-19 ###############
+
+Initial Commit of Kent Gorrell's File Dialog Project.  These files 
+include: 
+
+1. The "accdb" dir:
+
+   a. Kents_FileDialog_Tools.accdb -
+      The original Access ACCDB Database used to create the template.
+
+   b. Kents_FileDialog_Tools.accdt - 
+      The initial Access ACCDT Template file created from the .accdb file, 
+      which has been decomposed into it's sourse files for Git tracking.
+
+      
+2. The "images" dir: 
+
+   a. icon.jpg - 
+      The icon file create for the template and this project.
+
+   b. icon_sm.jpg - 
+      The small version of the icon file create for the template and this 
+      project.
+
+   c. Screenshot.jpg - 
+      The screenshot image used to create the accdt file for this project.
+
+
+3. The "scripts" dir: 
+
+   a. AssembleAccTemplate.bat - 
+      A batch file to build an Access ACCDT template file from the files
+      currently in the "src" folder in this project, and build it into the 
+      "bin" directory for this project.
+
+   b. UnzipAccTemplate.bat - 
+      A batch file to expand the Access ACCDT template file, from the accdt
+      file in the "accdb" directory, into the "src" directory. This will 
+      delete any existing files in the "src" directory.
+
+
+4. The "src" dir:
+
+   The "src" directory contains all of the expanded files and directories 
+   from the Access ACCDT template file, found in the "accdb" directory for 
+   this project.  These file were created by running the 
+   "UnzipAccTemplate.bat" script.  These files are all of the files needed
+   to create an Access database from an Access template, which are in a text
+   based format, so that we can track changes made to the original source 
+   Access database found in the "accdb" folder of this project.
+
+
+5. Files in the project root:
+
+   a. ChangeLog.txt - 
+      This file, which will theoretically track a list of changes made to 
+      this Access database project.
+
+   b. README.md -    
+      This initial README file created by GitHub for this project.
+
+   
+
+

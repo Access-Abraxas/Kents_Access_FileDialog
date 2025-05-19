@@ -1,0 +1,164 @@
+Option Compare Database
+Option Explicit
+
+' This module is for functions that
+' accept a Full Path as a parameter
+' and return a part of that part
+' either:
+' Just the Path
+' Just the File Name
+' Short Full Path
+
+Public Function FullPath_File_NameTest()
+' Test Returning just the File Name from a Full Path
+' but only if the file exists
+' Only the Last example should return a file name
+    ' no trailing \
+    Debug.Print oFullPath.File_Name("C:\Program Files (x86)\Common Files\System")
+    ' trailing \
+    Debug.Print oFullPath.File_Name("C:\Program Files (x86)\Common Files\System\")
+    ' File Name (Does not Exist)
+    Debug.Print oFullPath.File_Name("C:\Program Files (x86)\Common Files\System\whatever.dll")
+    ' File Name (Exists
+    Debug.Print oFullPath.File_Name("C:\Program Files (x86)\Common Files\System\wab32.dll")
+End Function
+
+Public Function File_Name(FullPath As String) As String
+' Returns file name but only if the file exists
+' call using:
+' oFullPath.File_Name
+On Error GoTo Error_Handler
+    
+    If FullPath = "" Then
+        File_Name = ""
+        
+    ElseIf InStr(FullPath, ".") = 0 Then
+        File_Name = ""
+
+    ElseIf InStrRev(FullPath, "\") > InStrRev(FullPath, ".") Then
+        ' no dot after the last back slash
+        File_Name = ""
+        
+    ElseIf Not oFso.FileExists(FullPath) Then
+        ' last Folder name has a dot and no file name
+        ' or file does not exist
+        File_Name = ""
+        
+    Else
+        File_Name = oFso.GetFileName(FullPath)
+    End If
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox Err.Number & vbNewLine _
+            & Err.Description _
+            , vbCritical, "File_Name"
+    Resume Exit_Procedure
+    Resume
+End Function
+
+Public Function FullPath_FileName(FullPath As String) As String
+    FullPath_FileName = oFullPath.File_Name(FullPath)
+End Function
+
+Public Function FullPath_PathTest()
+' Test Returning just the Path from a Full Path
+' all four should return the same path
+    ' no trailing \
+    Debug.Print FullPath_Path("C:\Program Files (x86)\Common Files\System")
+    ' trailing \
+    Debug.Print FullPath_Path("C:\Program Files (x86)\Common Files\System\")
+    ' File Name (Exists)
+    Debug.Print FullPath_Path("C:\Program Files (x86)\Common Files\System\wab32.dll")
+    ' File Name (Does not Exist)
+    Debug.Print FullPath_Path("C:\Program Files (x86)\Common Files\System\whatever.dll")
+End Function
+Public Function FullPath_Path(FullPath As String) As String
+' Returns that Path without the file name
+' Terminates in a \
+' may return an empty string if folder names includes dots and does not exist
+On Error GoTo Error_Handler
+Dim iSlash As Integer
+Dim iDot As Integer
+Dim strPath As String
+Dim strFileName As String
+
+    iSlash = InStrRev(FullPath, "\")
+    iDot = InStrRev(FullPath, ".")
+    With oFso
+        If iSlash > iDot Then
+            ' No dot following the last Backslash so no file name
+            ' just return the full path even if the folder does not exist
+            strPath = FullPath
+    
+        ElseIf .FolderExists(FullPath) Then
+Folder_Exists:
+            ' the Full Path is an existing folder with no File Name
+            strPath = FullPath
+            
+        ElseIf .FileExists(FullPath) Then
+File_Exists:
+            ' the Full Path ends in an existing file name
+            ' so strip the file name
+                ' Note:
+                ' oFso.GetFileName will return the last folder if there isn't file name
+                ' so we can't trust it to strip the file name
+                ' unless we first test to see if the file exists
+            strFileName = oFso.GetFileName(FullPath)
+            strPath = Replace(FullPath, "\" & strFileName, "")
+            
+        ElseIf .FolderExists(Left(FullPath, iSlash - 1)) Then
+            ' folder before the last back slash exists
+            strPath = Left(FullPath, iSlash - 1)
+        
+        Else
+            ' path includes dots but neither the file or folder exists
+            strPath = "" '  = oFso.GetFileName(FullPath)
+        End If
+    End With
+    
+    If Len(strPath) > 0 Then
+        If Right(strPath, 1) <> "\" Then strPath = strPath & "\"
+    End If
+    
+    FullPath_Path = strPath
+    
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "oFullPath.FullPath_Path"
+    Resume Exit_Procedure
+    Resume Next
+End Function
+
+Public Function FullPath_ShortFullPathTest()
+    ' File Name (Exists)
+    Debug.Print FullPath_ShortFullPath("C:\Program Files (x86)\Common Files\System\wab32.dll")
+    ' File Name (Does not Exist)
+    Debug.Print FullPath_ShortFullPath("C:\Program Files (x86)\Common Files\System\whatever.dll")
+End Function
+Public Function FullPath_ShortFullPath(FullPath As String) As String
+' Crystal Long
+' Requires FULL path including file name
+' if file does not exist: return an empty string
+    With oFso
+        If .FileExists(FullPath) Then
+            FullPath_ShortFullPath = .GetFile(FullPath).ShortPath
+        End If
+    End With
+End Function
+
+Public Function GetFullPath_FileName(Var) As Variant
+' called from controls or query rather than from VBA
+' Handles Nulls
+' Returm Empty string
+' or the file name but only if the file exists
+    If Not IsNull(Var) Then
+        GetFullPath_FileName = oFullPath.File_Name(CStr(Var))
+    Else
+        GetFullPath_FileName = ""
+    End If
+End Function

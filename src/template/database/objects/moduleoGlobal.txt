@@ -1,0 +1,32 @@
+Option Compare Database
+Option Explicit
+
+' Naming Conventions
+' Variable prefixes
+' g for Global (Public)
+' m for Module (Private)
+
+
+' Sub Name
+    ' Suffix indicates the Action performed eg _Open
+    ' where a function is used to perform an action then it shold follow the rules for sub
+' Function Names
+    ' Suffix (following the Underscore) indicates the type of data returned eg _FullPath
+    ' and generally return a boolean to indicate success eg File_Copy
+
+
+Public gDb As DAO.Database
+Public gFso As Scripting.FileSystemObject
+
+' Objects used freqently and therefore remain active after first use
+' Self healing so that if the variable is lost, it is recreated when used
+
+Public Property Get oDB(Optional blnForce As Boolean) As DAO.Database
+    If blnForce Or gDb Is Nothing Then Set gDb = CurrentDb
+    Set oDB = gDb
+End Property
+
+Public Function oFso() As Scripting.FileSystemObject
+    If gFso Is Nothing Then Set gFso = New FileSystemObject
+    Set oFso = gFso
+End Function

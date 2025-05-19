@@ -1,0 +1,318 @@
+Option Compare Database
+Option Explicit
+
+Private Declare PtrSafe Function MakeSureDirectoryPathExists Lib "imagehlp.dll" _
+                                                    (ByVal lpPath As String _
+                                                    ) As Long
+Private Declare PtrSafe Function GetTempPath Lib "kernel32" Alias "GetTempPathA" _
+                                                    (ByVal nBufferLength As Long _
+                                                    , ByVal lpbuffer As String _
+                                                    ) As Long
+
+                                    
+Private Const acFolderSelect As Integer = 4
+Private mstrIniPath As String
+
+Public Sub Path_Create(ByVal strPath As String)
+    If InStr(strPath, ".") = 0 Then
+        ' if there isn't a file name then we need a trailing back slash
+        If Not Right(strPath, 1) = "\" Then strPath = strPath & "\"
+    End If
+    MakeSureDirectoryPathExists (strPath)
+    
+End Sub
+
+Public Sub Ensure_Exists(ByVal strPath As String)
+On Error GoTo Error_Handler
+    If InStr(strPath, ".") = 0 Then
+        ' if there isn't a file name then we need a trailing back slash
+        If Not Right(strPath, 1) = "\" Then strPath = strPath & "\"
+    End If
+    MakeSureDirectoryPathExists (strPath)
+    
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Sub
+Error_Handler:
+    MsgBox Err.Description & vbNewLine _
+            & "Procedure: Path_Ensure" _
+            , vbCritical, "Error:" & Err.Number
+    Resume Exit_Procedure
+    Resume
+End Sub
+
+
+Public Property Get Create(strFullPath As String) As Boolean
+' will accept a path that ends with a file name, back slash or no back slash
+' return true if successful
+On Error GoTo Error_Handler
+Dim intPosition As Integer, i As Integer
+Dim strFolder As String, strFrom As String
+
+    With oFso
+        If .FolderExists(strFullPath) Then
+            Create = True
+            GoTo Exit_Procedure
+        End If
+                
+        If Mid(strFullPath, 2, 1) = ":" Then
+            ' test for drive
+            If .DriveExists(Left(strFullPath, 1)) Then
+                ' If Not .FolderExists(strFullPath) Then
+                intPosition = 3
+                Do Until intPosition = 0
+                    strFrom = Mid(strFullPath, intPosition + 1)
+                    i = InStr(strFrom, "\")
+                    If i = 0 Then
+                        If InStr(strFrom, ".") = 0 Then ' Path may not end in a back slash
+                            .CreateFolder strFullPath
+                        End If
+                        intPosition = 0
+                    Else
+                        intPosition = intPosition + i
+                        strFolder = Left(strFullPath, intPosition - 1)
+                        If Not .FolderExists(strFolder) Then
+                            .CreateFolder strFolder
+                        End If
+                    End If
+                Loop
+            Else
+                MsgBox Left(strFullPath, 1) & " Drive does not exist", vbCritical, "oFolder.Create"
+                GoTo Exit_Procedure
+            End If
+        Else
+            MsgBox "No Drive Specified", vbCritical, "oFolder.Create"
+            GoTo Exit_Procedure
+        End If
+    End With
+    Create = True
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Property
+Error_Handler:
+    If Err.Number = 58 Then Resume Next ' Already Exists
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "oFolder.Create"
+    Resume Exit_Procedure
+    Resume
+End Property
+
+Public Function Exists(ByVal Path As String) As Boolean
+' will accept a path that ends with a file name, back slash or no back slash
+On Error GoTo Error_Handler
+Dim strFileName As String
+
+    With oFso
+        If Left(Path, 2) = "\\" Then
+            ' we don't currently support
+            Exists = False
+
+        ElseIf Not .DriveExists(Left(Path, 1)) Then
+            Exists = False
+            
+        Else
+            strFileName = oFso.GetFileName(Path)
+            
+            If InStr(Path, ".") Then Path = Left(Path, InStrRev(Path, "\"))
+            Exists = .FolderExists(Path)
+
+        End If
+    End With
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Function
+Error_Handler:
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "oFolder.Exists"
+    Resume Exit_Procedure
+    Resume Next
+End Function
+
+Public Sub Folder_Open(strFolder As String)
+On Error GoTo Error_Handler
+
+    If Not Left(strFolder, 2) = "\\" Then strFolder = Replace(strFolder, "\\", "\")
+    If InStr(strFolder, ".") Then strFolder = Left(strFolder, InStrRev(strFolder, "\"))
+    If oFolder.Exists(strFolder) Then
+        Shell "C:\WINDOWS\explorer.exe """ & strFolder & "", vbNormalFocus
+    Else
+        MsgBox strFolder & " Does not Exist", vbOKOnly, "Open Folder"
+    End If
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Sub
+Error_Handler:
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "oFolder.OpenDialog"
+    Resume Exit_Procedure
+    Resume Next
+End Sub
+
+Public Property Get BackSlash_Add(ByVal strPath As String) As String
+' Returns the result AND modifies the Parameter
+' Does nothing if the path includes a filename
+    ' make sure it's not a full path
+    If InStr(strPath, ".") = 0 Then
+        If Not Right(strPath, 1) = "\" Then strPath = strPath & "\"
+    End If
+    BackSlash_Add = strPath
+End Property
+
+
+Public Property Get Validate(ByRef strPath As String) As Boolean
+' will accept a path that ends with a file name, back slash or no back slash
+On Error GoTo Error_Handler
+Dim i As Integer, str As String
+
+    With oFso
+        If .DriveExists(Left(strPath, 1)) Then
+            Validate = .FolderExists(strPath)
+            If Not Validate Then
+                If Right(strPath, 1) = "\" Then strPath = Left(strPath, Len(strPath) - 1)
+                i = 3
+                Do Until i = 0
+                    i = InStr(i + 1, strPath, "\")
+                    If i = 0 Then
+                        .CreateFolder (strPath)
+                        Validate = True
+                    Else
+                        str = Left(strPath, i - 1)
+                        .CreateFolder (str)
+                    End If
+                Loop
+            End If
+        Else
+            MsgBox Left(strPath, 1) & " Drive does not exist", vbCritical, "oFolder.Create"
+        End If
+    End With
+    If Right(strPath, 1) <> "\" Then strPath = strPath & "\"
+
+
+Exit_Procedure:
+    On Error Resume Next
+    Exit Property
+Error_Handler:
+    MsgBox "Error: " & Err.Number & " " & Err.Description, vbCritical, "oFolder.Validate"
+    Resume Exit_Procedure
+    Resume Next
+End Property
+
+Public Sub File_List(strPath As String _
+                            , Optional strFileSpec As String _
+                            , Optional blnIncludeSubfolders As Boolean _
+                            , Optional lst As ListBox _
+                            ) ' As Collection
+On Error GoTo Err_Handler
+'Purpose:   List the files in the path.
+'Arguments: strPath = the path to search.
+'           strFileSpec = "*.*" unless you specify differently.
+'           bIncludeSubfolders: If True, returns results from subdirectories of strPath as well.
+'           lst: if you pass in a list box, items are added to it. If not, files are listed to immediate window.
+'               The list box must have its Row Source Type property set to Value List.
+'Method:    FilDir() adds items to a collection, calling itself recursively for subfolders.
+Dim colDirList As New Collection
+Dim varItem As Variant
+
+    Call FillDir(colDirList, strPath, strFileSpec, blnIncludeSubfolders)
+
+    'Add the files to a list box if one was passed in. Otherwise list to the Immediate Window.
+    If lst Is Nothing Then
+        For Each varItem In colDirList
+            'Debug Print varItem
+        Next
+    Else
+        For Each varItem In colDirList
+        lst.AddItem varItem
+        Next
+    End If
+
+Exit_Handler:
+    Exit Sub
+
+Err_Handler:
+    MsgBox "Error " & Err.Number & ": " & Err.Description
+    Resume Exit_Handler
+End Sub
+
+Private Sub FillDir(colDirList As Collection _
+                            , ByVal strFolder As String _
+                            , strFileSpec As String _
+                            , bIncludeSubfolders As Boolean)
+'Build up a list of files, and then add to this list, any additional folders
+Dim strTemp As String
+Dim colFolders As New Collection
+Dim vFolderName As Variant
+
+    'Add the files to the folder.
+    strFolder = TrailingSlash(strFolder)
+    strTemp = Dir(strFolder & strFileSpec)
+    Do While strTemp <> vbNullString
+        colDirList.Add strFolder & strTemp
+        strTemp = Dir
+    Loop
+
+    If bIncludeSubfolders Then
+        'Build collection of additional subfolders.
+        strTemp = Dir(strFolder, vbDirectory)
+        Do While strTemp <> vbNullString
+            If (strTemp <> ".") And (strTemp <> "..") Then
+                If (GetAttr(strFolder & strTemp) And vbDirectory) <> 0& Then
+                    colFolders.Add strTemp
+                End If
+            End If
+            strTemp = Dir
+        Loop
+        'Call function recursively for each subfolder.
+        For Each vFolderName In colFolders
+            Call FillDir(colDirList, strFolder & TrailingSlash(vFolderName), strFileSpec, True)
+        Next vFolderName
+    End If
+End Sub
+
+Public Function TrailingSlash(varIn As Variant) As String
+    If Len(varIn) > 0& Then
+        If Right(varIn, 1&) = "\" Then
+            TrailingSlash = varIn
+        Else
+            TrailingSlash = varIn & "\"
+        End If
+    End If
+End Function
+
+Public Property Get Temp_Path() As String
+'Maximum Windows path length is 260 characters
+Const MAX_PATH As Long = 260
+Dim Buffer As String
+    
+    'Create a string and fill it with 260 spaces
+    Buffer = Space(MAX_PATH)
+
+    'Call the API GetTempPathA function;
+    '   this function returns the first path found from this list:
+    '   1. TMP environment variable
+    '   2. TEMP environment variable
+    '   3. USERPROFILE environment variable
+    '   4. Windows directory
+    '
+    '   It places the above value (with trailing slash) in the Buffer [out] argument
+    '       and retu rns the length of the path which we use to trim the extra spaces.
+    Dim PathLength As Long
+    PathLength = GetTempPath(MAX_PATH, Buffer)
+    
+    'Trim the excess spaces from the buffer based on the returned path length
+    Temp_Path = Left(Buffer, PathLength)
+End Property
+
+Public Property Get File_Count(ByVal strPath As String, Optional strExt As String)
+Dim strFileName As String
+    If oFolder.Exists(strPath) Then
+        If Not strExt = "" Then strPath = strPath & "*." & strExt
+        strFileName = Dir(strPath)
+        
+        Do While strFileName <> ""
+           File_Count = File_Count + 1
+            strFileName = Dir()
+        Loop
+    End If
+End Property
