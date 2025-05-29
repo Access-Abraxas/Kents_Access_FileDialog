@@ -37,33 +37,33 @@ project:
 
 1. The "accdb" dir:
 
-   * Kents_FileDialog_Tools.accdb - 
+   * Kents_FileDialog_Tools.accdb -      
      The development Access ACCDB database for this project.
 
-   * Kents_FileDialog_Tools.accdt - 
+   * Kents_FileDialog_Tools.accdt -      
      The Access ACCDT template file created from the development database. 
 
       
 2. The "images" dir: 
 
-   * icon.jpg - 
+   * icon.jpg -      
      The icon file created for this project.
 
-   * icon_sm.jpg - 
+   * icon_sm.jpg -      
      The small version of the icon created for this project.
 
-   * Screenshot.jpg - 
+   * Screenshot.jpg -      
      The screenshot image used to create the ACCDT file.
 
 
 3. The "scripts" dir: 
 
-   * AssembleAccTemplate.bat - 
+   * AssembleAccTemplate.bat -      
      A batch file to build an Access ACCDT template file from the files
      currently in the "src" folder in this project.  This ACCDT file is 
      built it into the "bin" directory for this project.
 
-   * UnzipAccTemplate.bat - 
+   * UnzipAccTemplate.bat -      
      A batch file to expand the Access ACCDT template file, from the accdt
      file in the "accdb" directory, into the "src" directory. This will 
      delete any existing files in the "src" directory.
@@ -71,7 +71,7 @@ project:
 
 4. The "src" dir:
 
-   * The Access Template (ACCDT) Source Files - 
+   * The Access Template (ACCDT) Source Files -      
      The "src" directory contains all of the expanded files and directories 
      from the Access ACCDT template file, found in the "accdb" directory for 
      this project.  These file were created by running the 
