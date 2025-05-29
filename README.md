@@ -37,33 +37,33 @@ project:
 
 1. The "accdb" dir:
 
-   * Kents_FileDialog_Tools.accdb 
+   * Kents_FileDialog_Tools.accdb - 
      The development Access ACCDB database for this project.
 
-   * Kents_FileDialog_Tools.accdt
+   * Kents_FileDialog_Tools.accdt - 
      The Access ACCDT template file created from the development database. 
 
       
 2. The "images" dir: 
 
-   * icon.jpg -
+   * icon.jpg - 
      The icon file created for this project.
 
-   * icon_sm.jpg -
+   * icon_sm.jpg - 
      The small version of the icon created for this project.
 
-   * Screenshot.jpg -
+   * Screenshot.jpg - 
      The screenshot image used to create the ACCDT file.
 
 
 3. The "scripts" dir: 
 
-   * AssembleAccTemplate.bat -
+   * AssembleAccTemplate.bat - 
      A batch file to build an Access ACCDT template file from the files
      currently in the "src" folder in this project.  This ACCDT file is 
      built it into the "bin" directory for this project.
 
-   * UnzipAccTemplate.bat -
+   * UnzipAccTemplate.bat - 
      A batch file to expand the Access ACCDT template file, from the accdt
      file in the "accdb" directory, into the "src" directory. This will 
      delete any existing files in the "src" directory.
@@ -83,9 +83,9 @@ project:
 
 5. Files in the project root:
 
-   * ChangeLog.txt - 
+   * ChangeLog.txt -      
      A human description of each of the changes made to this project.  
 
-   * README.md -    
+   * README.md -     
      This initial README file created by GitHub for this project.
 
