@@ -12,8 +12,8 @@ Kent Gorrell's project for using the MSO FileDialog tools for Microsoft Access
    path to a file location, call the following VBA code: 
 
 ```
-Dim strFilePath as String
-strFilePath = Select_FullPath("Select Files", "E:\App\", "Access", "*.accdb;*.accde", False)
+Dim strFilePath As String
+strFilePath = Select_FullPath("Select Files", "", "Access", "*.accdb;*.accde", False)
 ```
 
 
