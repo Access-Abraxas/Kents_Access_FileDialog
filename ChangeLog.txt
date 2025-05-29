@@ -1,6 +1,12 @@
 
 
-############### 2025-05-19 ###############
+############### Access-Abraxas: 2025-05-19 ###############
+
+Updated the README.md files with some basic info for the project.
+
+
+
+############### Access-Abraxas: 2025-05-19 ###############
 
 Initial Commit of Kent Gorrell's File Dialog Project.  These files 
 include: 
@@ -8,24 +14,24 @@ include:
 1. The "accdb" dir:
 
    a. Kents_FileDialog_Tools.accdb -
-      The original Access ACCDB Database used to create the template.
+      The original Access ACCDB database used to create the template.
 
    b. Kents_FileDialog_Tools.accdt - 
-      The initial Access ACCDT Template file created from the .accdb file, 
-      which has been decomposed into it's sourse files for Git tracking.
+      The initial Access ACCDT template file created from the .accdb file, 
+      which has been decomposed into it's source files for Git tracking.
 
       
 2. The "images" dir: 
 
    a. icon.jpg - 
-      The icon file create for the template and this project.
+      The icon file created for the template and this project.
 
    b. icon_sm.jpg - 
-      The small version of the icon file create for the template and this 
+      A small version of the icon file created for the template and this 
       project.
 
    c. Screenshot.jpg - 
-      The screenshot image used to create the accdt file for this project.
+      The screenshot image used to create the ACCDT file for this project.
 
 
 3. The "scripts" dir: 
@@ -59,7 +65,7 @@ include:
       this Access database project.
 
    b. README.md -    
-      This initial README file created by GitHub for this project.
+      The initial README file created by GitHub for this project.
 
    
 
