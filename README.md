@@ -22,7 +22,7 @@ The source code for Kent's Access Dialog project is provided in this project
 in a very specific format.  Because Microsoft Access databases are binary files, 
 a text diff of those files is not particularly useful for looking at changes in 
 the Access database code.  So, for this project, along with the development 
-Access database, I've created some tools to unzip Access Template files, so that
+Access database, I've created DevHelper.accdb to work with the template files, so 
 templates can be created from the Access development database and all of database 
 objects and code for this project can be uploaded as text files for inclusion in 
 the repository for this project.  This is useful because then is it easy to see 
@@ -36,6 +36,9 @@ project:
 
 
 1. The "accdb" dir:
+
+   * DevHelper.accdb - 
+     An Access application to prepare this code project for Git uploads.     
 
    * Kents_FileDialog_Tools.accdb -      
      The development Access ACCDB database for this project.
@@ -62,11 +65,6 @@ project:
      A batch file to build an Access ACCDT template file from the files
      currently in the "src" folder in this project.  This ACCDT file is 
      built it into the "bin" directory for this project.
-
-   * UnzipAccTemplate.bat -      
-     A batch file to expand the Access ACCDT template file, from the accdt
-     file in the "accdb" directory, into the "src" directory. This will 
-     delete any existing files in the "src" directory.
 
 
 4. The "src" dir:

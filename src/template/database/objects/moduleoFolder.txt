@@ -50,7 +50,7 @@ On Error GoTo Error_Handler
 Dim intPosition As Integer, i As Integer
 Dim strFolder As String, strFrom As String
 
-    With oFso
+    With oFSO
         If .FolderExists(strFullPath) Then
             Create = True
             GoTo Exit_Procedure
@@ -103,7 +103,7 @@ Public Function Exists(ByVal Path As String) As Boolean
 On Error GoTo Error_Handler
 Dim strFileName As String
 
-    With oFso
+    With oFSO
         If Left(Path, 2) = "\\" Then
             ' we don't currently support
             Exists = False
@@ -112,7 +112,7 @@ Dim strFileName As String
             Exists = False
             
         Else
-            strFileName = oFso.GetFileName(Path)
+            strFileName = oFSO.GetFileName(Path)
             
             If InStr(Path, ".") Then Path = Left(Path, InStrRev(Path, "\"))
             Exists = .FolderExists(Path)
@@ -165,7 +165,7 @@ Public Property Get Validate(ByRef strPath As String) As Boolean
 On Error GoTo Error_Handler
 Dim i As Integer, str As String
 
-    With oFso
+    With oFSO
         If .DriveExists(Left(strPath, 1)) Then
             Validate = .FolderExists(strPath)
             If Not Validate Then

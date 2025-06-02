@@ -5,7 +5,7 @@ Public Function File_Overwrite(ToFullPath As String) As Boolean
 ' Prompt user for permission to overwrite if the file exists
 ' return true if they say Yes or the File Does Not Exist
 Dim strMessage As String
-    If oFso.FileExists(ToFullPath) Then
+    If oFSO.FileExists(ToFullPath) Then
         strMessage = "The File:" & vbNewLine _
                             & ToFullPath & vbNewLine _
                             & "Exists. Do you want to Overwrite it?"
@@ -31,7 +31,7 @@ Dim blnSuccess As Boolean
 
     If FromFullPath = ToFullPath Then GoTo Exit_Procedure
     
-    With oFso
+    With oFSO
         If .FileExists(FromFullPath) Then
             If Not ForceOverwrite Then
                 If Not .FileExists(ToFullPath) Then
@@ -76,7 +76,7 @@ Dim blnSuccess As Boolean
 
 Basic_Validation:
     If FromFullPath = ToFullPath Then GoTo Exit_Procedure
-    If Not oFso.FileExists(FromFullPath) Then GoTo Exit_Procedure
+    If Not oFSO.FileExists(FromFullPath) Then GoTo Exit_Procedure
     
     blnSuccess = File_Copy(FromFullPath _
                                 , ToFullPath _
@@ -86,8 +86,8 @@ Basic_Validation:
 From_Delete:
         ' If the Copy was successul
         ' Delete the original and return True
-        oFso.DeleteFile FromFullPath, True
-        blnSuccess = Not oFso.FileExists(FromFullPath)
+        oFSO.DeleteFile FromFullPath, True
+        blnSuccess = Not oFSO.FileExists(FromFullPath)
     End If
     
     File_Move = blnSuccess
@@ -130,7 +130,7 @@ Public Function File_Delete(FullPath As String, Optional ForceDelete As Boolean)
 ' or is deleted and no longer exists
 On Error GoTo Error_Handler
     
-    With oFso
+    With oFSO
         If .FileExists(FullPath) Then
             .DeleteFile FullPath, ForceDelete
         End If
@@ -153,11 +153,11 @@ Dim blnWild As Boolean
     If blnWild Then
         File_Exists = Len(Dir(FullPath)) > 0
     Else
-        File_Exists = oFso.FileExists(FullPath)
+        File_Exists = oFSO.FileExists(FullPath)
     End If
 End Property
 
 Public Property Get File_Extension(ByVal FileName As String) As String
 ' Returns File Extension even if the File Does Not Exist
-    File_Extension = oFso.GetExtensionName(FileName)
+    File_Extension = oFSO.GetExtensionName(FileName)
 End Property

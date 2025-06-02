@@ -26,7 +26,7 @@ Public Property Get oDB(Optional blnForce As Boolean) As DAO.Database
     Set oDB = gDb
 End Property
 
-Public Function oFso() As Scripting.FileSystemObject
+Public Function oFSO() As Scripting.FileSystemObject
     If gFso Is Nothing Then Set gFso = New FileSystemObject
-    Set oFso = gFso
+    Set oFSO = gFso
 End Function

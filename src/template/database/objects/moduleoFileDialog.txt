@@ -118,7 +118,7 @@ Dim strToFullPath As String
     strToFullPath = SaveAs_FullPath(strToFullPath)
     If Len(strToFullPath) > 0 Then
         ' if the file exists then we don't get here unless the user chose to replace
-        oFso.CopyFile strFromFullPath, strToFullPath, True
+        oFSO.CopyFile strFromFullPath, strToFullPath, True
     End If
 End Function
 

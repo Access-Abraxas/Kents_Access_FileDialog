@@ -1,5 +1,34 @@
 
 
+############### Access-Abraxas: 2025-06-01 ###############
+
+Updated several tools within this project. I made some changes to the 
+development database, as well as added a new Access database tool to 
+prepare the dev project for uploading changes. Specifically, for this
+set of changes, I made the following updates:
+
+1. accdb\Kents_FileDialog_Tools.accdb - 
+   Added an "Example" form in the development database, so that users 
+   can test different FileDialog configurations.  The form also 
+   provides example VBA code to use the FileDialog. 
+
+2. accdb\DevHelper.accdb - 
+   This is a new tool I've created to prep this code project for
+   uploading changes into a Git repository.  This tool replaces the
+   UnzipAccTemplate.bat tool.  There is a form in this database with 
+   a button that will perform the following steps:
+       a. Create the ACCDT from Kents_FileDialog_Tools.accdb
+       b. Expand the template files into the 'src' directory
+
+3. scripts\UnzipAccTemplate.bat - 
+   Removed this file from the project, because this functionality has
+   been replaced by the DevHelper.accdb database.
+
+4. README.md - 
+   Updated the readme file to reflect these changes.
+
+
+
 ############### Access-Abraxas: 2025-05-19 ###############
 
 Updated the README.md files with some basic info for the project.

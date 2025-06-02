@@ -39,13 +39,13 @@ On Error GoTo Error_Handler
         ' no dot after the last back slash
         File_Name = ""
         
-    ElseIf Not oFso.FileExists(FullPath) Then
+    ElseIf Not oFSO.FileExists(FullPath) Then
         ' last Folder name has a dot and no file name
         ' or file does not exist
         File_Name = ""
         
     Else
-        File_Name = oFso.GetFileName(FullPath)
+        File_Name = oFSO.GetFileName(FullPath)
     End If
 
 Exit_Procedure:
@@ -87,7 +87,7 @@ Dim strFileName As String
 
     iSlash = InStrRev(FullPath, "\")
     iDot = InStrRev(FullPath, ".")
-    With oFso
+    With oFSO
         If iSlash > iDot Then
             ' No dot following the last Backslash so no file name
             ' just return the full path even if the folder does not exist
@@ -106,7 +106,7 @@ File_Exists:
                 ' oFso.GetFileName will return the last folder if there isn't file name
                 ' so we can't trust it to strip the file name
                 ' unless we first test to see if the file exists
-            strFileName = oFso.GetFileName(FullPath)
+            strFileName = oFSO.GetFileName(FullPath)
             strPath = Replace(FullPath, "\" & strFileName, "")
             
         ElseIf .FolderExists(Left(FullPath, iSlash - 1)) Then
@@ -144,7 +144,7 @@ Public Function FullPath_ShortFullPath(FullPath As String) As String
 ' Crystal Long
 ' Requires FULL path including file name
 ' if file does not exist: return an empty string
-    With oFso
+    With oFSO
         If .FileExists(FullPath) Then
             FullPath_ShortFullPath = .GetFile(FullPath).ShortPath
         End If
